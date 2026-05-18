@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel Docente — SISOL{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-10">
+    <div class="max-w-5xl mx-auto">
+
+        <!-- Saludo -->
+        <div class="mb-8 animate-fade-in-up" style="opacity:0">
+            <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Panel Docente</p>
+            <h2 class="text-3xl font-black text-[var(--text-primary)] tracking-tight">
+                Bienvenido, <span class="gradient-text">{{ user.first_name|default:user.username|title }}</span>
+            </h2>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <a href="{% url 'solicitudes:crear_solicitud' %}"
+                class="group flex items-center gap-5 p-5 bg-white rounded-2xl border border-[var(--border)] shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 animate-fade-in-up stagger-1 card-hover" style="opacity:0">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-plus text-white text-xl"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-[var(--text-primary)]">Nueva Solicitud</p>
+                    <p class="text-sm text-[var(--text-secondary)]">Solicitar laboratorio móvil</p>
+                </div>
+                <i class="fa-solid fa-arrow-right ml-auto text-[var(--text-secondary)] group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all duration-200 text-sm"></i>
+            </a>
+
+            <a href="{% url 'solicitudes:mis_solicitudes' %}"
+                class="group flex items-center gap-5 p-5 bg-white rounded-2xl border border-[var(--border)] shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 hover:-translate-y-1 animate-fade-in-up stagger-2 card-hover" style="opacity:0">
+                <div class="w-14 h-14 rounded-2xl bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-center group-hover:bg-slate-100 transition-colors duration-300">
+                    <i class="fa-solid fa-list text-[var(--text-secondary)] text-xl"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-[var(--text-primary)]">Mis Solicitudes</p>
+                    <p class="text-sm text-[var(--text-secondary)]">Ver historial completo</p>
+                </div>
+                <i class="fa-solid fa-arrow-right ml-auto text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] group-hover:translate-x-1 transition-all duration-200 text-sm"></i>
+            </a>
+        </div>
+
+        <!-- Últimas solicitudes -->
+        <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] overflow-hidden animate-fade-in-up stagger-3" style="opacity:0">
+            <div class="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i class="fa-solid fa-clock-rotate-left text-[var(--accent)] text-sm"></i>
+                    </div>
+                    <h3 class="text-sm font-black uppercase tracking-widest text-[var(--text-secondary)]">Últimas Solicitudes</h3>
+                </div>
+                {% if mis_solicitudes %}
+                <a href="{% url 'solicitudes:mis_solicitudes' %}" class="text-xs font-bold text-[var(--accent)] hover:underline">Ver todas</a>
+                {% endif %}
+            </div>
+
+            {% if mis_solicitudes %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-[var(--surface-raised)] border-b border-[var(--border)]">
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">#</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Materia</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Fecha</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Estado</th>
+                            <th class="px-6 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[var(--border)]">
+                        {% for s in mis_solicitudes %}
+                        <tr class="hover:bg-[var(--surface-raised)] transition-colors duration-150 group">
+                            <td class="px-6 py-4 text-sm font-bold text-[var(--text-secondary)]">#{{ s.id }}</td>
+                            <td class="px-6 py-4 text-sm font-semibold text-[var(--text-primary)]">{{ s.materia.nombre }}</td>
+                            <td class="px-6 py-4 text-sm text-[var(--text-secondary)]">
+                                <i class="fa-solid fa-calendar text-xs mr-1.5 text-[var(--accent)]"></i>
+                                {{ s.fecha }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border
+                                    {% if s.estado == 'PENDIENTE' %}bg-yellow-50 text-yellow-700 border-yellow-200
+                                    {% elif s.estado == 'APROBADA' %}bg-green-50 text-green-700 border-green-200
+                                    {% else %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                                    <span class="w-1.5 h-1.5 rounded-full
+                                        {% if s.estado == 'PENDIENTE' %}bg-yellow-500
+                                        {% elif s.estado == 'APROBADA' %}bg-green-500
+                                        {% else %}bg-red-500{% endif %}"></span>
+                                    {{ s.get_estado_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'solicitudes:detalle_solicitud' s.id %}"
+                                    class="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--accent)] hover:underline transition-opacity duration-200">
+                                    Ver
+                                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center justify-center py-16 text-center px-6">
+                <div class="w-16 h-16 rounded-2xl bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-flask text-[var(--text-secondary)] text-2xl"></i>
+                </div>
+                <p class="font-bold text-[var(--text-primary)] mb-1">Sin solicitudes aún</p>
+                <p class="text-sm text-[var(--text-secondary)] mb-5">Crea tu primera solicitud para el laboratorio móvil</p>
+                <a href="{% url 'solicitudes:crear_solicitud' %}"
+                    class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm shadow-lg">
+                    <i class="fa-solid fa-plus"></i>
+                    Nueva Solicitud
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+django
+djangorestframework
+pandas
+openpyxl
+docxtpl
+python-dotenv
+reportlab

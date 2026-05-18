@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle Solicitud #{{ solicitud.id }} — SISOL{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-10">
+    <div class="max-w-4xl mx-auto">
+
+        <!-- Breadcrumb / Volver -->
+        <div class="flex items-center justify-between mb-8 animate-fade-in-up" style="opacity:0">
+            <a href="{% if request.user.rol == 'ADMIN' %}{% url 'solicitudes:lista_solicitudes' %}{% else %}{% url 'solicitudes:mis_solicitudes' %}{% endif %}"
+                class="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors group">
+                <i class="fa-solid fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform duration-200"></i>
+                Volver
+            </a>
+            <!-- Badge de estado flotante -->
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border
+                {% if solicitud.estado == 'PENDIENTE' %}bg-yellow-50 text-yellow-700 border-yellow-200
+                {% elif solicitud.estado == 'APROBADA' %}bg-green-50 text-green-700 border-green-200
+                {% else %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                <span class="w-2 h-2 rounded-full
+                    {% if solicitud.estado == 'PENDIENTE' %}bg-yellow-500
+                    {% elif solicitud.estado == 'APROBADA' %}bg-green-500
+                    {% else %}bg-red-500{% endif %}
+                    animate-pulse"></span>
+                {{ solicitud.get_estado_display }}
+            </span>
+        </div>
+
+        <!-- Header de la solicitud -->
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-[var(--border)] mb-6 animate-fade-in-up stagger-1" style="opacity:0">
+            <div class="gradient-bg p-8 relative overflow-hidden">
+                <div class="absolute -top-8 -right-8 w-40 h-40 bg-white/5 rounded-full"></div>
+                <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-white/5 rounded-full"></div>
+                <div class="relative flex items-start justify-between">
+                    <div class="flex items-start gap-4">
+                        <div class="glass p-3 rounded-2xl shadow-lg">
+                            <i class="fa-solid fa-flask text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-blue-300/70 text-xs font-bold uppercase tracking-widest mb-1">Solicitud</p>
+                            <h2 class="text-3xl font-black text-white tracking-tight">#{{ solicitud.id }}</h2>
+                            <p class="text-blue-200/80 text-sm mt-1">
+                                <i class="fa-solid fa-user mr-1.5"></i>{{ solicitud.docente.username|title }}
+                                <span class="mx-2 opacity-40">·</span>
+                                <i class="fa-solid fa-clock mr-1.5"></i>{{ solicitud.creado_en }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones de Admin (dentro del header card) -->
+            {% if request.user.rol == 'ADMIN' %}
+            <div class="px-8 py-5 border-t border-[var(--border)] bg-[var(--surface-raised)] flex flex-wrap gap-3">
+                {% if solicitud.estado == 'PENDIENTE' %}
+                <a href="{% url 'solicitudes:aprobar_solicitud' solicitud.id %}"
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md">
+                    <i class="fa-solid fa-circle-check"></i>
+                    Aprobar Solicitud
+                </a>
+                <a href="{% url 'solicitudes:rechazar_solicitud' solicitud.id %}"
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    Rechazar Solicitud
+                </a>
+                {% elif solicitud.estado == 'APROBADA' %}
+                <a href="{% url 'solicitudes:asignar_responsable' solicitud.id %}"
+                    class="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm shadow-sm">
+                    <i class="fa-solid fa-user-check"></i>
+                    Asignar Responsable
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Grid de info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+            <!-- Datos académicos -->
+            <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] p-6 animate-fade-in-up stagger-2 card-hover" style="opacity:0">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i class="fa-solid fa-graduation-cap text-[var(--accent)] text-sm"></i>
+                    </div>
+                    <h3 class="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)]">Datos Académicos</h3>
+                </div>
+                <dl class="space-y-4">
+                    {% include 'solicitudes/partials/_detail_field.html' with label="Docente" value=solicitud.docente.username icon="fa-user" %}
+                    {% include 'solicitudes/partials/_detail_field.html' with label="Carrera" value=solicitud.carrera.nombre icon="fa-building-columns" %}
+                    {% include 'solicitudes/partials/_detail_field.html' with label="Materia" value=solicitud.materia.nombre icon="fa-book" %}
+                    {% include 'solicitudes/partials/_detail_field.html' with label="Curso" value=solicitud.curso.nombre icon="fa-users" %}
+                    {% include 'solicitudes/partials/_detail_field.html' with label="Teléfono" value=solicitud.telefono_docente|default:"No registrado" icon="fa-phone" %}
+                </dl>
+            </div>
+
+            <!-- Horario y ubicación -->
+            <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] p-6 animate-fade-in-up stagger-3 card-hover" style="opacity:0">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-days text-[var(--accent)] text-sm"></i>
+                    </div>
+                    <h3 class="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)]">Horario y Ubicación</h3>
+                </div>
+
+                <!-- Fecha destacada -->
+                <div class="bg-[var(--surface-raised)] rounded-2xl p-4 mb-4 flex items-center gap-4 border border-[var(--border)]">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex flex-col items-center justify-center text-white shadow-lg">
+                        <span class="text-xs font-bold uppercase leading-none opacity-80">Fecha</span>
+                        <span class="text-lg font-black leading-tight">{{ solicitud.fecha|date:"d" }}</span>
+                        <span class="text-xs font-semibold leading-none opacity-80">{{ solicitud.fecha|date:"M" }}</span>
+                    </div>
+                    <div>
+                        <p class="text-base font-bold text-[var(--text-primary)]">{{ solicitud.fecha }}</p>
+                        <p class="text-sm text-[var(--text-secondary)]">
+                            <i class="fa-solid fa-clock mr-1 text-[var(--accent)]"></i>
+                            {{ solicitud.hora_inicio }} – {{ solicitud.hora_fin }}
+                        </p>
+                    </div>
+                </div>
+
+                <dl class="space-y-4">
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Laboratorio</dt>
+                        <dd class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot text-[var(--accent)] text-xs"></i>
+                            {{ solicitud.bloque }} — Aula {{ solicitud.numero_aula }}
+                        </dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Equipos</dt>
+                        <dd class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                            <i class="fa-solid fa-laptop text-[var(--accent)] text-xs"></i>
+                            {{ solicitud.cantidad_equipos }} equipo{% if solicitud.cantidad_equipos != 1 %}s{% endif %}
+                        </dd>
+                    </div>
+                    {% if solicitud.descripcion %}
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Descripción</dt>
+                        <dd class="text-sm text-[var(--text-primary)]">{{ solicitud.descripcion }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        {% if solicitud.observaciones %}
+        <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] p-6 mb-6 animate-fade-in-up stagger-3" style="opacity:0">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-9 h-9 rounded-xl bg-yellow-100 flex items-center justify-center">
+                    <i class="fa-solid fa-comment-dots text-yellow-600 text-sm"></i>
+                </div>
+                <h3 class="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)]">Observaciones</h3>
+            </div>
+            <p class="text-sm text-[var(--text-primary)] leading-relaxed bg-[var(--surface-raised)] rounded-2xl p-4 border border-[var(--border)]">
+                {{ solicitud.observaciones }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Asignaciones -->
+        {% if asignaciones %}
+        <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] p-6 animate-fade-in-up stagger-4" style="opacity:0">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <i class="fa-solid fa-users-gear text-[var(--accent)] text-sm"></i>
+                </div>
+                <h3 class="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)]">Asignaciones</h3>
+                <span class="ml-auto bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-secondary)] text-xs font-bold px-3 py-1 rounded-full">
+                    {{ asignaciones|length }}
+                </span>
+            </div>
+            <div class="space-y-3">
+                {% for a in asignaciones %}
+                <div class="flex items-start justify-between p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-raised)] hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                            {{ a.responsable.username|first|upper }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-[var(--text-primary)]">{{ a.responsable.username|title }}</p>
+                            <p class="text-xs text-[var(--text-secondary)]">
+                                <i class="fa-solid fa-clock mr-1"></i>Asignado: {{ a.asignado_en }}
+                            </p>
+                            {% if a.observaciones %}
+                            <p class="text-xs text-[var(--text-secondary)] mt-1.5 italic">{{ a.observaciones }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border
+                        {% if a.estado == 'ASIGNADO' %}bg-blue-50 text-blue-700 border-blue-200
+                        {% elif a.estado == 'COMPLETADO' %}bg-green-50 text-green-700 border-green-200
+                        {% else %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                        <span class="w-1.5 h-1.5 rounded-full
+                            {% if a.estado == 'ASIGNADO' %}bg-blue-500
+                            {% elif a.estado == 'COMPLETADO' %}bg-green-500
+                            {% else %}bg-red-500{% endif %}"></span>
+                        {{ a.get_estado_display }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

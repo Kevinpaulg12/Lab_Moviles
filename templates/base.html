@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Solicitudes{% endblock %} — SISOL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <style>
+        /* ── Variables ── */
+        :root {
+            --primary:        #0f172a;
+            --primary-light:  #1e293b;
+            --accent:         #3b82f6;
+            --accent-glow:    #60a5fa;
+            --success:        #10b981;
+            --warning:        #f59e0b;
+            --danger:         #ef4444;
+            --surface:        #ffffff;
+            --surface-raised: #f8fafc;
+            --text-primary:   #0f172a;
+            --text-secondary: #64748b;
+            --border:         #e2e8f0;
+            --nav-height:     72px;
+        }
+
+        /* ── Tipografía ── */
+        body    { font-family: 'DM Sans', sans-serif; }
+        h1,h2,h3,h4,h5,h6 { font-family: 'Outfit', sans-serif; }
+
+        /* ── Keyframes ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0);     }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(110%); }
+            to   { opacity: 1; transform: translateX(0);    }
+        }
+        @keyframes slideOutRight {
+            from { opacity: 1; transform: translateX(0);    }
+            to   { opacity: 0; transform: translateX(120%); }
+        }
+        @keyframes progress {
+            from { width: 100%; }
+            to   { width: 0%;   }
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1;   transform: scale(1);    }
+            50%       { opacity: 0.6; transform: scale(1.15); }
+        }
+        @keyframes scrollBtnIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.9); }
+            to   { opacity: 1; transform: translateY(0)    scale(1);   }
+        }
+
+        /* ── Clases de animación ── */
+        .animate-fade-in-up  { animation: fadeInUp   0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-down  { animation: slideDown  0.3s ease-out; }
+        .toast-enter         { animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .toast-exit          { animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .toast-progress      { animation: progress 5s linear forwards; }
+
+        /* ── Stagger ── */
+        .stagger-1 { animation-delay: 0.08s; }
+        .stagger-2 { animation-delay: 0.16s; }
+        .stagger-3 { animation-delay: 0.24s; }
+        .stagger-4 { animation-delay: 0.32s; }
+
+        /* ── Utilidades globales ── */
+        html { scroll-behavior: smooth; }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--accent) 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-glow) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .glass {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .glass-dark {
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
+        }
+
+        /* ── Botones ── */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -8px rgba(59,130,246,0.5);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -8px rgba(239,68,68,0.5);
+        }
+
+        /* ── Navbar ── */
+        .nav-link { position: relative; overflow: hidden; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            width: 0; height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* ── Mobile menu ── */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-menu.active { max-height: 600px; }
+
+        /* ── Scroll-to-top ── */
+        #scroll-to-top {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(12px) scale(0.9);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #scroll-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
+        /* ── Toast ── */
+        .toast-card { will-change: transform, opacity; }
+
+        /* ── Active nav highlight ── */
+        .nav-active {
+            background: rgba(59,130,246,0.25) !important;
+            border-color: rgba(96,165,250,0.4) !important;
+            color: #fff !important;
+        }
+    </style>
+</head>
+
+<body class="bg-[var(--surface-raised)] font-sans leading-normal tracking-normal min-h-screen flex flex-col">
+
+    <!-- ══ Toast container ══ -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[60] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="toast-card toast-enter pointer-events-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
+             role="alert" aria-live="assertive"
+             data-index="{{ forloop.counter0 }}">
+
+            <!-- Barra de progreso superior -->
+            <div class="h-1 w-full
+                {% if message.tags == 'error' or message.tags == 'danger' %}bg-red-100
+                {% elif message.tags == 'warning' %}bg-yellow-100
+                {% elif message.tags == 'success' %}bg-green-100
+                {% else %}bg-blue-100{% endif %}">
+                <div class="toast-progress h-full rounded-full
+                    {% if message.tags == 'error' or message.tags == 'danger' %}bg-gradient-to-r from-red-500 to-red-400
+                    {% elif message.tags == 'warning' %}bg-gradient-to-r from-yellow-500 to-yellow-400
+                    {% elif message.tags == 'success' %}bg-gradient-to-r from-green-500 to-green-400
+                    {% else %}bg-gradient-to-r from-blue-500 to-blue-400{% endif %}">
+                </div>
+            </div>
+
+            <div class="p-4 flex items-start gap-3">
+                <!-- Icono -->
+                <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
+                    {% if message.tags == 'error' or message.tags == 'danger' %}bg-red-50 text-red-500
+                    {% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-500
+                    {% elif message.tags == 'success' %}bg-green-50 text-green-500
+                    {% else %}bg-blue-50 text-blue-500{% endif %}">
+                    <i class="fa-solid text-lg
+                        {% if message.tags == 'error' or message.tags == 'danger' %}fa-circle-exclamation
+                        {% elif message.tags == 'warning' %}fa-triangle-exclamation
+                        {% elif message.tags == 'success' %}fa-circle-check
+                        {% else %}fa-circle-info{% endif %}"></i>
+                </div>
+                <!-- Texto -->
+                <div class="flex-1 min-w-0 pt-0.5">
+                    <p class="text-xs font-black uppercase tracking-widest mb-0.5
+                        {% if message.tags == 'error' or message.tags == 'danger' %}text-red-500
+                        {% elif message.tags == 'warning' %}text-yellow-500
+                        {% elif message.tags == 'success' %}text-green-600
+                        {% else %}text-blue-500{% endif %}">
+                        {% if message.tags == 'error' or message.tags == 'danger' %}Error
+                        {% elif message.tags == 'warning' %}Advertencia
+                        {% elif message.tags == 'success' %}Éxito
+                        {% else %}Información{% endif %}
+                    </p>
+                    <p class="text-sm text-[var(--text-secondary)] leading-relaxed">{{ message }}</p>
+                </div>
+                <!-- Cerrar -->
+                <button onclick="closeToast(this)" title="Cerrar"
+                    class="flex-shrink-0 w-8 h-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--danger)] hover:bg-red-50 transition-all duration-200 rounded-lg mt-0.5">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- ══ Navbar ══ -->
+    <nav class="glass-dark sticky top-0 z-40 shadow-2xl" aria-label="Navegación principal">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-[var(--nav-height)]">
+
+                <!-- Logo -->
+                <a href="{% url 'solicitudes:home' %}" class="flex items-center gap-3.5 group" aria-label="SISOL - Inicio">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-blue-500 rounded-xl blur-lg opacity-25 group-hover:opacity-50 transition-opacity duration-300"></div>
+                        <div class="relative bg-white/10 p-2.5 rounded-xl border border-white/20 shadow-lg group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300">
+                            <svg class="w-7 h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-white font-black text-lg tracking-tight leading-none">SISOL</p>
+                        <p class="text-blue-300/60 text-[11px] font-medium leading-none mt-0.5">Gestión de Laboratorios</p>
+                    </div>
+                </a>
+
+                <!-- Desktop nav -->
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="{% url 'solicitudes:home' %}"
+                        class="nav-link text-blue-100/90 hover:text-white hover:bg-white/10 px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium">
+                        <i class="fa-solid fa-house text-xs"></i>
+                        Inicio
+                    </a>
+
+                    {% if user.rol == 'ADMIN' %}
+                    <a href="{% url 'solicitudes:lista_solicitudes' %}"
+                        class="nav-link text-white px-4 py-2 rounded-xl transition-all duration-200 font-bold flex items-center gap-2 text-sm border border-white/15 bg-white/8 hover:bg-white/15
+                        {% if request.resolver_match.url_name == 'lista_solicitudes' %}nav-active{% endif %}">
+                        <i class="fa-solid fa-gauge-high text-xs"></i>
+                        Panel Admin
+                    </a>
+                    {% elif user.rol == 'RESPONSABLE' %}
+                    <a href="{% url 'solicitudes:mis_asignaciones' %}"
+                        class="nav-link text-white px-4 py-2 rounded-xl transition-all duration-200 font-bold flex items-center gap-2 text-sm border border-white/15 bg-white/8 hover:bg-white/15
+                        {% if request.resolver_match.url_name == 'mis_asignaciones' %}nav-active{% endif %}">
+                        <i class="fa-solid fa-clipboard-check text-xs"></i>
+                        Mis Asignaciones
+                    </a>
+                    {% elif user.rol == 'DOCENTE' %}
+                    <a href="{% url 'solicitudes:crear_solicitud' %}"
+                        class="nav-link text-white px-4 py-2 rounded-xl transition-all duration-200 font-bold flex items-center gap-2 text-sm border border-white/15 bg-white/8 hover:bg-white/15
+                        {% if request.resolver_match.url_name == 'crear_solicitud' %}nav-active{% endif %}">
+                        <i class="fa-solid fa-flask text-xs"></i>
+                        Nueva Solicitud
+                    </a>
+                    <a href="{% url 'solicitudes:mis_solicitudes' %}"
+                        class="nav-link text-blue-100/90 hover:text-white hover:bg-white/10 px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium
+                        {% if request.resolver_match.url_name == 'mis_solicitudes' %}nav-active{% endif %}">
+                        <i class="fa-solid fa-list text-xs"></i>
+                        Mis Solicitudes
+                    </a>
+                    {% endif %}
+
+                    <!-- Separador + Usuario -->
+                    <div class="ml-3 pl-3 border-l border-white/15 flex items-center gap-3">
+                        <div class="flex items-center gap-2.5 text-white">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center font-black text-sm shadow-lg">
+                                {{ user.username|first|upper }}
+                            </div>
+                            <div class="hidden lg:flex flex-col leading-tight">
+                                <span class="font-semibold text-sm">{{ user.username|title }}</span>
+                                <span class="text-[11px] text-blue-300/60 font-medium">{{ user.get_tipo_display_rol }}</span>
+                            </div>
+                        </div>
+                        <form action="{% url 'accounts:logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/35 text-red-200 hover:text-white border border-red-500/25 hover:border-red-500/50 transition-all duration-200 text-sm font-semibold"
+                                title="Cerrar sesión">
+                                <span class="hidden lg:inline">Salir</span>
+                                <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Hamburger -->
+                <button id="mobile-menu-button"
+                    class="md:hidden w-10 h-10 flex items-center justify-center text-white hover:text-blue-200 hover:bg-white/10 rounded-xl transition-all duration-200"
+                    aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="mobile-menu md:hidden" role="navigation" aria-label="Menú móvil">
+                <div class="flex flex-col gap-1 pb-4 pt-1 animate-slide-down">
+                    <a href="{% url 'solicitudes:home' %}"
+                        class="text-blue-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm">
+                        <i class="fa-solid fa-house w-4 text-center"></i>
+                        Inicio
+                    </a>
+                    {% if user.rol == 'ADMIN' %}
+                    <a href="{% url 'solicitudes:lista_solicitudes' %}"
+                        class="text-blue-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm
+                        {% if request.resolver_match.url_name == 'lista_solicitudes' %}nav-active{% endif %}">
+                        <i class="fa-solid fa-gauge-high w-4 text-center"></i>
+                        Panel Admin
+                    </a>
+                    {% elif user.rol == 'RESPONSABLE' %}
+                    <a href="{% url 'solicitudes:mis_asignaciones' %}"
+                        class="text-blue-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm">
+                        <i class="fa-solid fa-clipboard-check w-4 text-center"></i>
+                        Mis Asignaciones
+                    </a>
+                    {% elif user.rol == 'DOCENTE' %}
+                    <a href="{% url 'solicitudes:crear_solicitud' %}"
+                        class="text-blue-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm">
+                        <i class="fa-solid fa-flask w-4 text-center"></i>
+                        Nueva Solicitud
+                    </a>
+                    <a href="{% url 'solicitudes:mis_solicitudes' %}"
+                        class="text-blue-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-sm">
+                        <i class="fa-solid fa-list w-4 text-center"></i>
+                        Mis Solicitudes
+                    </a>
+                    {% endif %}
+
+                    <div class="border-t border-white/10 my-1 mx-1"></div>
+
+                    <!-- Usuario info -->
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center font-black text-sm text-white shadow-lg">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <div class="leading-tight">
+                            <p class="text-white font-semibold text-sm">{{ user.username|title }}</p>
+                            <p class="text-blue-300/60 text-xs">{{ user.get_tipo_display_rol }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Logout móvil -->
+                    <form id="logout-form-mobile" action="{% url 'accounts:logout' %}" method="post" class="px-1">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-200 hover:text-white hover:bg-red-500/30 transition-all duration-200 text-sm font-semibold">
+                            <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ Contenido ══ -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ══ Footer ══ -->
+    <footer class="bg-[var(--primary)] border-t border-white/8 mt-auto" aria-label="Pie de página">
+        <div class="container mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+                <!-- Marca -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-gradient-to-br from-blue-400 to-blue-600 p-2.5 rounded-xl shadow-lg">
+                            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                        </div>
+                        <span class="font-black text-white text-lg tracking-tight">SISOL</span>
+                    </div>
+                    <p class="text-blue-300/60 text-sm leading-relaxed">
+                        Sistema de Gestión de Laboratorios Móviles de la Universidad Estatal de Milagro.
+                    </p>
+                </div>
+
+                <!-- Links -->
+                <div>
+                    <h4 class="font-bold text-white text-sm mb-5 tracking-wide">Enlaces Rápidos</h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{% url 'solicitudes:home' %}" class="text-blue-300/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                                <i class="fa-solid fa-chevron-right text-xs text-blue-500/60 group-hover:text-blue-400 transition-colors"></i>
+                                Inicio
+                            </a>
+                        </li>
+                        {% if user.rol == 'ADMIN' %}
+                        <li>
+                            <a href="{% url 'solicitudes:lista_solicitudes' %}" class="text-blue-300/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                                <i class="fa-solid fa-chevron-right text-xs text-blue-500/60 group-hover:text-blue-400 transition-colors"></i>
+                                Panel de Control
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a href="#" class="text-blue-300/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                                <i class="fa-solid fa-chevron-right text-xs text-blue-500/60 group-hover:text-blue-400 transition-colors"></i>
+                                Ayuda
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contacto -->
+                <div>
+                    <h4 class="font-bold text-white text-sm mb-5 tracking-wide">Contacto</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-blue-300/60 text-sm">
+                            <i class="fa-solid fa-location-dot text-blue-400/70 mt-0.5 text-xs flex-shrink-0"></i>
+                            Cdla. Universitaria, Milagro — Ecuador
+                        </li>
+                        <li class="flex items-center gap-3 text-blue-300/60 text-sm">
+                            <i class="fa-solid fa-phone text-blue-400/70 text-xs flex-shrink-0"></i>
+                            (04) 2715-081
+                        </li>
+                        <li class="flex items-center gap-3 text-blue-300/60 text-sm">
+                            <i class="fa-solid fa-envelope text-blue-400/70 text-xs flex-shrink-0"></i>
+                            info@unemi.edu.ec
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom bar -->
+            <div class="border-t border-white/8 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p class="text-blue-300/40 text-xs">&copy; {% now "Y" %} Universidad Estatal de Milagro. Todos los derechos reservados.</p>
+                <div class="flex gap-2">
+                    <a href="#" title="Facebook"  class="w-9 h-9 rounded-xl bg-white/5 hover:bg-blue-500/25 flex items-center justify-center text-blue-300/40 hover:text-blue-400 transition-all duration-200"><i class="fa-brands fa-facebook text-sm"></i></a>
+                    <a href="#" title="Twitter"   class="w-9 h-9 rounded-xl bg-white/5 hover:bg-blue-500/25 flex items-center justify-center text-blue-300/40 hover:text-blue-400 transition-all duration-200"><i class="fa-brands fa-twitter text-sm"></i></a>
+                    <a href="#" title="Instagram" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-blue-500/25 flex items-center justify-center text-blue-300/40 hover:text-blue-400 transition-all duration-200"><i class="fa-brands fa-instagram text-sm"></i></a>
+                    <a href="#" title="YouTube"   class="w-9 h-9 rounded-xl bg-white/5 hover:bg-blue-500/25 flex items-center justify-center text-blue-300/40 hover:text-blue-400 transition-all duration-200"><i class="fa-brands fa-youtube text-sm"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ══ Scroll-to-top ══ -->
+    <button id="scroll-to-top"
+        class="fixed bottom-8 right-8 z-40 w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl shadow-xl hover:shadow-blue-500/30 hover:scale-110 transition-all duration-300"
+        aria-label="Volver arriba"
+        onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <i class="fa-solid fa-arrow-up text-sm"></i>
+    </button>
+
+    <!-- ══ Scripts ══ -->
+     <script/
+ <script>
+"use strict";
+
+/* ── Toasts ── */
+function closeToast(triggerEl) {
+    const toast = triggerEl.closest('.toast-card');
+    if (!toast) return;
+    toast.classList.remove('toast-enter');
+    toast.classList.add('toast-exit');
+    toast.addEventListener('animationend', () => toast.remove(), { once: true });
+}
+
+(function initToasts() {
+    document.querySelectorAll('.toast-card').forEach((toast, i) => {
+        const btn = toast.querySelector('button[onclick]');
+        if (!btn) return;
+        const delay = 5000 + i * 250;
+        setTimeout(() => {
+            if (toast.isConnected) closeToast(btn);
+        }, delay);
+    });
+})();
+
+
+/* ── Mobile menu ── */
+(function initMobileMenu() {
+    const btn  = document.getElementById('mobile-menu-button');
+    const menu = document.getElementById('mobile-menu');
+    if (!btn || !menu) return;
+
+    function setOpen(open) {
+        menu.classList.toggle('active', open);
+        btn.setAttribute('aria-expanded', String(open));
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-bars',  !open);
+            icon.classList.toggle('fa-xmark',  open);
+        }
+    }
+
+    btn.addEventListener('click', () => setOpen(!menu.classList.contains('active')));
+
+    // Cerrar al pulsar un enlace o el backdrop (fuera del menú)
+    menu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => setOpen(false));
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && !btn.contains(e.target)) {
+            setOpen(false);
+        }
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('active')) setOpen(false);
+    });
+})();
+
+
+/* ── Scroll-to-top ── */
+(function initScrollTop() {
+    const btn = document.getElementById('scroll-to-top');
+    if (!btn) return;
+
+    const toggle = () => btn.classList.toggle('visible', window.scrollY > 300);
+
+    window.addEventListener('scroll', toggle, { passive: true });
+    toggle(); // estado inicial
+})();
+
+
+/* ── Animaciones on-scroll (IntersectionObserver) ── */
+(function initScrollAnimations() {
+    if (!('IntersectionObserver' in window)) return;
+
+    const items = document.querySelectorAll('.animate-fade-in-up[style*="opacity:0"]');
+    if (!items.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '';   // deja que la animación CSS tome el control
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    items.forEach(el => observer.observe(el));
+})();
+    </script>
+    <script src="{% static 'js/index.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración — SISOL{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-10">
+    <div class="max-w-5xl mx-auto">
+
+        <!-- Saludo -->
+        <div class="mb-8 animate-fade-in-up" style="opacity:0">
+            <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Panel de Administración</p>
+            <h2 class="text-3xl font-black text-[var(--text-primary)] tracking-tight">
+                Bienvenido, <span class="gradient-text">{{ user.username|title }}</span>
+            </h2>
+        </div>
+
+        <!-- Métricas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+
+            <!-- Pendientes -->
+            <a href="{% url 'solicitudes:lista_solicitudes' %}?estado=PENDIENTE"
+                class="group bg-white rounded-3xl shadow-xl overflow-hidden border border-[var(--border)] card-hover animate-fade-in-up stagger-1 block" style="opacity:0">
+                <div class="h-1.5 bg-gradient-to-r from-yellow-400 to-yellow-500"></div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-yellow-50 border border-yellow-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fa-solid fa-clock text-yellow-500 text-lg"></i>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
+                    </div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Pendientes</p>
+                    <p class="text-5xl font-black text-[var(--text-primary)] leading-none">{{ pendientes }}</p>
+                    <p class="text-xs text-yellow-600 font-semibold mt-2">Requieren revisión</p>
+                </div>
+            </a>
+
+            <!-- Aprobadas -->
+            <a href="{% url 'solicitudes:lista_solicitudes' %}?estado=APROBADA"
+                class="group bg-white rounded-3xl shadow-xl overflow-hidden border border-[var(--border)] card-hover animate-fade-in-up stagger-2 block" style="opacity:0">
+                <div class="h-1.5 bg-gradient-to-r from-green-400 to-green-500"></div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fa-solid fa-circle-check text-green-500 text-lg"></i>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
+                    </div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Aprobadas</p>
+                    <p class="text-5xl font-black text-[var(--text-primary)] leading-none">{{ aprobadas }}</p>
+                    <p class="text-xs text-green-600 font-semibold mt-2">Procesadas con éxito</p>
+                </div>
+            </a>
+
+            <!-- Rechazadas -->
+            <a href="{% url 'solicitudes:lista_solicitudes' %}?estado=RECHAZADA"
+                class="group bg-white rounded-3xl shadow-xl overflow-hidden border border-[var(--border)] card-hover animate-fade-in-up stagger-3 block" style="opacity:0">
+                <div class="h-1.5 bg-gradient-to-r from-red-400 to-red-500"></div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fa-solid fa-circle-xmark text-red-500 text-lg"></i>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
+                    </div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Rechazadas</p>
+                    <p class="text-5xl font-black text-[var(--text-primary)] leading-none">{{ rechazadas }}</p>
+                    <p class="text-xs text-red-600 font-semibold mt-2">No procesadas</p>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Barra visual de proporción -->
+        <div class="bg-white rounded-3xl border border-[var(--border)] shadow-sm px-6 py-5 mb-8 animate-fade-in-up stagger-3" style="opacity:0">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Distribución de Solicitudes</p>
+                <p class="text-xs text-[var(--text-secondary)]">Total: <span class="font-bold text-[var(--text-primary)]">{{ pendientes|add:aprobadas|add:rechazadas }}</span></p>
+            </div>
+            {% with total=pendientes|add:aprobadas|add:rechazadas %}
+            {% if total > 0 %}
+            <div class="flex h-3 rounded-full overflow-hidden gap-0.5">
+                {% if pendientes %}
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-700"
+                    style="width: {% widthratio pendientes total 100 %}%"
+                    title="Pendientes: {{ pendientes }}"></div>
+                {% endif %}
+                {% if aprobadas %}
+                <div class="bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all duration-700"
+                    style="width: {% widthratio aprobadas total 100 %}%"
+                    title="Aprobadas: {{ aprobadas }}"></div>
+                {% endif %}
+                {% if rechazadas %}
+                <div class="bg-gradient-to-r from-red-400 to-red-500 rounded-full transition-all duration-700"
+                    style="width: {% widthratio rechazadas total 100 %}%"
+                    title="Rechazadas: {{ rechazadas }}"></div>
+                {% endif %}
+            </div>
+            <div class="flex items-center gap-5 mt-3">
+                <span class="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>Pendientes
+                </span>
+                <span class="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>Aprobadas
+                </span>
+                <span class="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>Rechazadas
+                </span>
+            </div>
+            {% else %}
+            <div class="h-3 bg-[var(--surface-raised)] rounded-full"></div>
+            <p class="text-xs text-[var(--text-secondary)] mt-2">Sin solicitudes registradas aún.</p>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] p-6 animate-fade-in-up stagger-4" style="opacity:0">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-[var(--accent)] text-sm"></i>
+                </div>
+                <h3 class="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)]">Acciones Rápidas</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <a href="{% url 'solicitudes:lista_solicitudes' %}"
+                    class="group flex items-center gap-4 p-5 bg-[var(--surface-raised)] rounded-2xl hover:bg-blue-50 border-2 border-transparent hover:border-blue-100 transition-all duration-300 hover:-translate-y-0.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-list text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold text-[var(--text-primary)] group-hover:text-blue-600 transition-colors text-sm">Todas las Solicitudes</p>
+                        <p class="text-xs text-[var(--text-secondary)]">Lista completa del sistema</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-xs text-[var(--text-secondary)] group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all duration-200"></i>
+                </a>
+
+                <a href="{% url 'solicitudes:lista_solicitudes' %}?estado=PENDIENTE"
+                    class="group flex items-center gap-4 p-5 bg-[var(--surface-raised)] rounded-2xl hover:bg-yellow-50 border-2 border-transparent hover:border-yellow-100 transition-all duration-300 hover:-translate-y-0.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-hourglass-half text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold text-[var(--text-primary)] group-hover:text-yellow-600 transition-colors text-sm">Solicitudes Pendientes</p>
+                        <p class="text-xs text-[var(--text-secondary)]">Revisar y gestionar nuevas</p>
+                    </div>
+                    {% if pendientes %}
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-500 text-white text-xs font-black flex items-center justify-center">
+                        {{ pendientes }}
+                    </span>
+                    {% else %}
+                    <i class="fa-solid fa-arrow-right text-xs text-[var(--text-secondary)] group-hover:text-yellow-500 group-hover:translate-x-1 transition-all duration-200"></i>
+                    {% endif %}
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

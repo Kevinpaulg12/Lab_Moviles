@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Asignar Responsable — Solicitud #{{ solicitud.id }}{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
+
+    <!-- Fondo decorativo -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-400/5 rounded-full blur-2xl"></div>
+    </div>
+
+    <div class="w-full max-w-lg animate-fade-in-up">
+
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
+            <a href="{% url 'solicitudes:home' %}" class="hover:text-[var(--accent)] transition-colors">Inicio</a>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+            <a href="{% url 'solicitudes:lista_solicitudes' %}" class="hover:text-[var(--accent)] transition-colors">Solicitudes</a>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+            <a href="{% url 'solicitudes:detalle_solicitud' solicitud.id %}" class="hover:text-[var(--accent)] transition-colors">#{{ solicitud.id }}</a>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+            <span class="text-[var(--text-primary)] font-medium">Asignar Responsable</span>
+        </div>
+
+        <!-- Card principal -->
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-[var(--border)] card-hover">
+
+            <!-- Header -->
+            <div class="gradient-bg p-8 relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute -top-8 -right-8 w-32 h-32 bg-white/5 rounded-full"></div>
+                <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-white/5 rounded-full"></div>
+
+                <div class="relative flex items-start gap-4">
+                    <div class="glass p-3 rounded-2xl shadow-lg">
+                        <i class="fa-solid fa-user-check text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white tracking-tight">Asignar Responsable</h2>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">
+                                Solicitud #{{ solicitud.id }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+
+                <!-- Info de la solicitud -->
+                <div class="bg-[var(--surface-raised)] rounded-2xl p-5 mb-6 border border-[var(--border)] stagger-1 animate-fade-in-up" style="opacity:0">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-[var(--accent)]"></i>
+                        Detalles de la Solicitud
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Docente</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                                <i class="fa-solid fa-user text-[var(--accent)] text-xs"></i>
+                                {{ solicitud.docente.username|title }}
+                            </span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Materia</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                                <i class="fa-solid fa-book text-[var(--accent)] text-xs"></i>
+                                {{ solicitud.materia.nombre }}
+                            </span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Fecha</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                                <i class="fa-solid fa-calendar text-[var(--accent)] text-xs"></i>
+                                {{ solicitud.fecha }}
+                            </span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Horario</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                                <i class="fa-solid fa-clock text-[var(--accent)] text-xs"></i>
+                                {{ solicitud.hora_inicio }} – {{ solicitud.hora_fin }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario -->
+                <form method="post" class="stagger-2 animate-fade-in-up" style="opacity:0">
+                    {% csrf_token %}
+
+                    <div class="space-y-4 mb-6">
+                        {% for field in form %}
+                        <div class="flex flex-col gap-1.5">
+                            <label for="{{ field.id_for_label }}"
+                                class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+                                {{ field.label }}
+                            </label>
+                            <div class="relative">
+                                {{ field }}
+                            </div>
+                            {% if field.errors %}
+                            <p class="text-xs text-[var(--danger)] flex items-center gap-1">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                {{ field.errors|join:", " }}
+                            </p>
+                            {% endif %}
+                            {% if field.help_text %}
+                            <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="flex gap-3">
+                        <a href="{% url 'solicitudes:detalle_solicitud' solicitud.id %}"
+                            class="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl border border-[var(--border)] bg-white hover:bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-semibold transition-all duration-200 text-sm">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit"
+                            class="flex-1 btn-primary flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-white font-bold text-sm shadow-lg">
+                            <i class="fa-solid fa-user-check"></i>
+                            Asignar Responsable
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Estilos para los inputs del formulario Django */
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1.5px solid var(--border);
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        background: white;
+        transition: all 0.2s ease;
+        outline: none;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.875rem center;
+        padding-right: 2.5rem;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

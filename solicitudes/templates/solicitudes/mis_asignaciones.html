@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Asignaciones — SISOL{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-10">
+    <div class="max-w-5xl mx-auto">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between mb-8 animate-fade-in-up" style="opacity:0">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Responsable</p>
+                <h2 class="text-3xl font-black text-[var(--text-primary)] tracking-tight">Mis Asignaciones</h2>
+            </div>
+            <div class="hidden md:flex items-center gap-2 bg-white border border-[var(--border)] rounded-2xl px-5 py-3 shadow-sm">
+                <i class="fa-solid fa-layer-group text-[var(--accent)] text-sm"></i>
+                <span class="text-sm font-bold text-[var(--text-primary)]">{{ asignaciones|length }}</span>
+                <span class="text-sm text-[var(--text-secondary)]">resultado{% if asignaciones|length != 1 %}s{% endif %}</span>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="flex flex-wrap gap-2 mb-6 animate-fade-in-up stagger-1" style="opacity:0">
+            <a href="{% url 'solicitudes:mis_asignaciones' %}"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all duration-200
+                {% if not estado_actual %}bg-[var(--primary)] text-white border-[var(--primary)] shadow-lg{% else %}bg-white text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)]{% endif %}">
+                <i class="fa-solid fa-layer-group text-xs"></i>
+                Todas
+            </a>
+            <a href="{% url 'solicitudes:mis_asignaciones' %}?estado=ASIGNADO"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all duration-200
+                {% if estado_actual == 'ASIGNADO' %}bg-blue-500 text-white border-blue-500 shadow-lg{% else %}bg-white text-[var(--text-secondary)] border-[var(--border)] hover:border-blue-400 hover:text-blue-600{% endif %}">
+                <span class="w-2 h-2 rounded-full {% if estado_actual == 'ASIGNADO' %}bg-white{% else %}bg-blue-400{% endif %}"></span>
+                Pendientes
+            </a>
+            <a href="{% url 'solicitudes:mis_asignaciones' %}?estado=COMPLETADO"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all duration-200
+                {% if estado_actual == 'COMPLETADO' %}bg-green-500 text-white border-green-500 shadow-lg{% else %}bg-white text-[var(--text-secondary)] border-[var(--border)] hover:border-green-400 hover:text-green-600{% endif %}">
+                <span class="w-2 h-2 rounded-full {% if estado_actual == 'COMPLETADO' %}bg-white{% else %}bg-green-400{% endif %}"></span>
+                Completadas
+            </a>
+        </div>
+
+        <!-- Lista de asignaciones -->
+        <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] overflow-hidden animate-fade-in-up stagger-2" style="opacity:0">
+            {% if asignaciones %}
+            <div class="divide-y divide-[var(--border)]">
+                {% for a in asignaciones %}
+                <div class="p-6 hover:bg-[var(--surface-raised)] transition-colors duration-150 group">
+                    <div class="flex items-start justify-between gap-4">
+
+                        <!-- Info principal -->
+                        <div class="flex items-start gap-4 flex-1 min-w-0">
+                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-black text-sm shadow-sm flex-shrink-0">
+                                #{{ a.solicitud.id }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-[var(--text-primary)] text-sm truncate">{{ a.solicitud.materia.nombre }}</p>
+                                <p class="text-xs text-[var(--text-secondary)] mt-0.5">
+                                    {{ a.solicitud.carrera.nombre }}
+                                    <span class="mx-1.5 opacity-40">·</span>
+                                    <i class="fa-solid fa-user text-xs mr-1"></i>{{ a.solicitud.docente.username|title }}
+                                </p>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                                    <span class="text-xs text-[var(--text-secondary)] flex items-center gap-1.5">
+                                        <i class="fa-solid fa-calendar text-[var(--accent)] text-xs"></i>
+                                        {{ a.solicitud.fecha }}
+                                    </span>
+                                    <span class="text-xs text-[var(--text-secondary)] flex items-center gap-1.5">
+                                        <i class="fa-solid fa-clock text-[var(--accent)] text-xs"></i>
+                                        {{ a.solicitud.hora_inicio }} – {{ a.solicitud.hora_fin }}
+                                    </span>
+                                    <span class="text-xs text-[var(--text-secondary)] flex items-center gap-1.5">
+                                        <i class="fa-solid fa-laptop text-[var(--accent)] text-xs"></i>
+                                        {{ a.solicitud.cantidad_equipos }} equipos
+                                    </span>
+                                    <span class="text-xs text-[var(--text-secondary)] flex items-center gap-1.5">
+                                        <i class="fa-solid fa-location-dot text-[var(--accent)] text-xs"></i>
+                                        {{ a.solicitud.bloque }} — Aula {{ a.solicitud.numero_aula }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acciones -->
+                        <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border
+                                {% if a.estado == 'ASIGNADO' %}bg-blue-50 text-blue-700 border-blue-200
+                                {% elif a.estado == 'COMPLETADO' %}bg-green-50 text-green-700 border-green-200
+                                {% else %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                                <span class="w-1.5 h-1.5 rounded-full
+                                    {% if a.estado == 'ASIGNADO' %}bg-blue-500
+                                    {% elif a.estado == 'COMPLETADO' %}bg-green-500
+                                    {% else %}bg-red-500{% endif %}"></span>
+                                {{ a.get_estado_display }}
+                            </span>
+                            {% if a.estado == 'ASIGNADO' %}
+                            <a href="{% url 'solicitudes:completar_asignacion' a.id %}"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Completar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center justify-center py-20 text-center px-6">
+                <div class="w-16 h-16 rounded-2xl bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-clipboard-list text-[var(--text-secondary)] text-2xl"></i>
+                </div>
+                <p class="font-bold text-[var(--text-primary)] mb-1">Sin asignaciones</p>
+                <p class="text-sm text-[var(--text-secondary)]">No tienes tareas asignadas actualmente.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

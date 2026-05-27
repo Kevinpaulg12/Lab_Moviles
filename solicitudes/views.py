@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
-from .models import Solicitud, Asignacion, DocenteCarrera, DocenteMateria, Carrera, Materia, Curso
-from .forms import SolicitudForm, AsignacionForm
+from .models import Solicitud, Asignacion, DocenteCarrera, DocenteMateria, Carrera, Materia, Curso, SolicitudEspecial
+from .forms import SolicitudForm, AsignacionForm, SolicitudEspecialForm
 from accounts.models import Usuario
 
 
@@ -13,9 +13,18 @@ def home(request):
         return redirect('accounts:login')
     
     if request.user.rol == 'ADMIN':
-        pendientes = Solicitud.objects.filter(estado='PENDIENTE').count()
-        aprobadas = Solicitud.objects.filter(estado='APROBADA').count()
-        rechazadas = Solicitud.objects.filter(estado='RECHAZADA').count()
+        pendientes = (
+            Solicitud.objects.filter(estado='PENDIENTE').count() +
+            SolicitudEspecial.objects.filter(estado='PENDIENTE').count()
+        )
+        aprobadas = (
+            Solicitud.objects.filter(estado='APROBADA').count() +
+            SolicitudEspecial.objects.filter(estado='APROBADA').count()
+        )
+        rechazadas = (
+            Solicitud.objects.filter(estado='RECHAZADA').count() +
+            SolicitudEspecial.objects.filter(estado='RECHAZADA').count()
+        )
         return render(request, 'solicitudes/home_admin.html', {
             'pendientes': pendientes,
             'aprobadas': aprobadas,
@@ -33,7 +42,6 @@ def home(request):
         return render(request, 'solicitudes/home_docente.html', {
             'mis_solicitudes': mis_solicitudes,
         })
-
 
 @login_required
 def crear_solicitud(request):
@@ -87,18 +95,21 @@ def lista_solicitudes(request):
     if request.user.rol != 'ADMIN':
         messages.error(request, 'No tienes permiso para ver esta página')
         return redirect('solicitudes:home')
-    
-    solicitudes = Solicitud.objects.select_related('docente', 'carrera', 'materia', 'curso').all()
+
     estado_filter = request.GET.get('estado')
-    
+
+    solicitudes = Solicitud.objects.select_related('docente', 'carrera', 'materia', 'curso').all()
+    solicitudes_especiales = SolicitudEspecial.objects.select_related('docente', 'carrera', 'materia', 'curso').all()
+
     if estado_filter:
         solicitudes = solicitudes.filter(estado=estado_filter)
-    
+        solicitudes_especiales = solicitudes_especiales.filter(estado=estado_filter)
+
     return render(request, 'solicitudes/lista_solicitudes.html', {
         'solicitudes': solicitudes,
-        'estado_actual': estado_filter
+        'solicitudes_especiales': solicitudes_especiales,
+        'estado_actual': estado_filter,
     })
-
 
 @login_required
 def detalle_solicitud(request, solicitud_id):
@@ -191,6 +202,33 @@ def asignar_responsable(request, solicitud_id):
         'solicitud': solicitud
     })
 
+@login_required
+def asignar_responsable_especial(request, solicitud_id):
+    if request.user.rol != 'ADMIN':
+        messages.error(request, 'No tienes permiso para asignar responsables')
+        return redirect('solicitudes:home')
+    
+    solicitud = get_object_or_404(SolicitudEspecial, id=solicitud_id)
+    
+    if solicitud.estado != 'APROBADA':
+        messages.error(request, 'Solo se pueden asignar responsables a solicitudes aprobadas')
+        return redirect('solicitudes:detalle_solicitud_especial', solicitud_id=solicitud_id)
+    
+    if request.method == 'POST':
+        form = AsignacionForm(request.POST)
+        if form.is_valid():
+            asignacion = form.save(commit=False)
+            asignacion.solicitud_especial = solicitud
+            asignacion.save()
+            messages.success(request, f'Responsable asignado a Solicitud Especial #{solicitud.id}')
+            return redirect('solicitudes:detalle_solicitud_especial', solicitud_id=solicitud_id)
+    else:
+        form = AsignacionForm()
+    
+    return render(request, 'solicitudes/asignar_responsable.html', {
+        'form': form,
+        'solicitud': solicitud
+    })
 
 @login_required
 def mis_asignaciones(request):
@@ -198,7 +236,9 @@ def mis_asignaciones(request):
         messages.error(request, 'No tienes permiso para ver esta página')
         return redirect('solicitudes:home')
     
-    asignaciones = request.user.asignaciones.select_related('solicitud', 'solicitud__docente', 'solicitud__carrera', 'solicitud__materia').all()
+    asignaciones = request.user.asignaciones.select_related(
+        'solicitud', 'solicitud__docente', 'solicitud__carrera', 'solicitud__materia'
+    ).all()
     estado_filter = request.GET.get('estado')
     
     if estado_filter:
@@ -251,7 +291,6 @@ def ajax_materias_por_carrera(request, carrera_id):
         ).select_related('materia')
         
         materias = [{'id': dm.materia.id, 'nombre': dm.materia.nombre} for dm in docente_materias]
-        
         return JsonResponse({'materias': materias})
     except Carrera.DoesNotExist:
         return JsonResponse({'error': 'Carrera no encontrada'}, status=404)
@@ -263,7 +302,6 @@ def ajax_cursos_por_materia(request, materia_id):
     
     try:
         materia = Materia.objects.get(id=materia_id)
-        
         docente_materias = DocenteMateria.objects.filter(
             docente=request.user,
             materia=materia
@@ -280,3 +318,119 @@ def ajax_cursos_por_materia(request, materia_id):
         return JsonResponse({'cursos': cursos})
     except Materia.DoesNotExist:
         return JsonResponse({'error': 'Materia no encontrada'}, status=404)
+
+
+@login_required
+def crear_solicitud_especial(request):
+    if request.user.rol != 'DOCENTE':
+        messages.error(request, 'No tienes permiso para crear solicitudes especiales')
+        return redirect('solicitudes:home')
+
+    docente = request.user
+
+    if request.method == 'POST':
+        form = SolicitudEspecialForm(request.POST, docente=docente)
+        if form.is_valid():
+            solicitud = form.save(commit=False)
+            solicitud.docente = docente
+            solicitud.save()
+            messages.success(request, f'Solicitud Especial #{solicitud.id} creada exitosamente')
+            return redirect('solicitudes:mis_solicitudes_especiales')
+        else:
+            error_list = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    field_label = form.fields[field].label or field
+                    error_list.append(f"{field_label}: {error}")
+            messages.error(request, f"Errores en el formulario: {'; '.join(error_list)}")
+    else:
+        form = SolicitudEspecialForm(docente=docente)
+
+    carreras_docente = docente.docente_carreras.select_related('carrera').all()
+
+    return render(request, 'solicitudes/crear_solicitud_especial.html', {
+        'form': form,
+        'carreras_docente': carreras_docente
+    })
+
+
+@login_required
+def mis_solicitudes_especiales(request):
+    if request.user.rol != 'DOCENTE':
+        messages.error(request, 'No tienes permiso para ver esta página')
+        return redirect('solicitudes:home')
+
+    solicitudes = request.user.solicitudes_especiales.all()
+    return render(request, 'solicitudes/mis_solicitudes_especiales.html', {
+        'solicitudes': solicitudes
+    })
+
+
+@login_required
+def lista_solicitudes_especiales(request):
+    if request.user.rol != 'ADMIN':
+        messages.error(request, 'No tienes permiso para ver esta página')
+        return redirect('solicitudes:home')
+
+    solicitudes = SolicitudEspecial.objects.select_related('docente', 'carrera', 'materia', 'curso').all()
+    estado_filter = request.GET.get('estado')
+    if estado_filter:
+        solicitudes = solicitudes.filter(estado=estado_filter)
+
+    return render(request, 'solicitudes/lista_solicitudes_especiales.html', {
+        'solicitudes': solicitudes,
+        'estado_actual': estado_filter
+    })
+
+
+@login_required
+def detalle_solicitud_especial(request, solicitud_id):
+    solicitud = get_object_or_404(
+        SolicitudEspecial.objects.select_related('docente', 'carrera', 'materia', 'curso'),
+        id=solicitud_id
+    )
+
+    if request.user.rol == 'DOCENTE' and solicitud.docente != request.user:
+        messages.error(request, 'No tienes permiso para ver esta solicitud')
+        return redirect('solicitudes:mis_solicitudes_especiales')
+
+    return render(request, 'solicitudes/detalle_solicitud_especial.html', {
+        'solicitud': solicitud
+    })
+
+
+@login_required
+def aprobar_solicitud_especial(request, solicitud_id):
+    if request.user.rol != 'ADMIN':
+        messages.error(request, 'No tienes permiso')
+        return redirect('solicitudes:home')
+
+    solicitud = get_object_or_404(SolicitudEspecial, id=solicitud_id)
+    if solicitud.estado != 'PENDIENTE':
+        messages.error(request, 'Esta solicitud ya fue procesada')
+    else:
+        solicitud.estado = 'APROBADA'
+        solicitud.save()
+        messages.success(request, f'Solicitud Especial #{solicitud.id} aprobada')
+    return redirect('solicitudes:detalle_solicitud_especial', solicitud_id=solicitud_id)
+
+
+@login_required
+def rechazar_solicitud_especial(request, solicitud_id):
+    if request.user.rol != 'ADMIN':
+        messages.error(request, 'No tienes permiso')
+        return redirect('solicitudes:home')
+
+    solicitud = get_object_or_404(SolicitudEspecial, id=solicitud_id)
+
+    if request.method == 'POST':
+        if solicitud.estado != 'PENDIENTE':
+            messages.error(request, 'Esta solicitud ya fue procesada')
+            return redirect('solicitudes:detalle_solicitud_especial', solicitud_id=solicitud_id)
+        solicitud.estado = 'RECHAZADA'
+        solicitud.observaciones = request.POST.get('observaciones', '')
+        solicitud.save()
+        messages.success(request, f'Solicitud Especial #{solicitud.id} rechazada')
+        return redirect('solicitudes:lista_solicitudes_especiales')
+
+    return render(request, 'solicitudes/rechazar_solicitud_especial.html', {'solicitud': solicitud})

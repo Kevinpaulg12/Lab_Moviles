@@ -1,5 +1,5 @@
 from django import forms
-from .models import Solicitud, Asignacion, Carrera, Materia, Curso
+from .models import Solicitud, Asignacion, Carrera, Materia, Curso, SolicitudEspecial
 
 
 class SolicitudForm(forms.ModelForm):
@@ -88,3 +88,66 @@ class AsignacionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         from accounts.models import Usuario
         self.fields['responsable'].queryset = Usuario.objects.filter(rol='RESPONSABLE')
+
+class SolicitudEspecialForm(forms.ModelForm):
+    class Meta:
+        model = SolicitudEspecial
+        fields = [
+            'carrera', 'materia', 'curso',
+            'bloque', 'numero_aula', 'cantidad_equipos', 'telefono_docente',
+            'fecha_inicio', 'hora_inicio', 'hora_fin', 'descripcion'
+        ]
+        widgets = {
+            'carrera': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none bg-white'
+            }),
+            'materia': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none bg-white'
+            }),
+            'curso': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none bg-white'
+            }),
+            'bloque': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'placeholder': 'Ej: Bloque A, Bloque B'
+            }),
+            'numero_aula': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'placeholder': 'Ej: 101, LAB-1'
+            }),
+            'cantidad_equipos': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'placeholder': 'Cantidad de equipos requeridos',
+                'min': '1'
+            }),
+            'telefono_docente': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'placeholder': 'Ej: 0991234567'
+            }),
+            'fecha_inicio': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'type': 'date'
+            }),
+            'hora_inicio': forms.TimeInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'type': 'time'
+            }),
+            'hora_fin': forms.TimeInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'type': 'time'
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none',
+                'placeholder': 'Descripción adicional (opcional)',
+                'rows': 3
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        docente = kwargs.pop('docente', None)
+        super().__init__(*args, **kwargs)
+        if docente:
+            carrera_ids = docente.docente_carreras.values_list('carrera_id', flat=True)
+            self.fields['carrera'].queryset = Carrera.objects.filter(id__in=carrera_ids)
+            self.fields['materia'].queryset = Materia.objects.all()
+            self.fields['curso'].queryset = Curso.objects.all()

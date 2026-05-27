@@ -1,0 +1,9 @@
+<div class="flex flex-col gap-0.5">
+    <dt class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">{{ label }}</dt>
+    <dd class="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+        {% if icon %}
+        <i class="fa-solid {{ icon }} text-[var(--accent)] text-xs"></i>
+        {% endif %}
+        {{ value }}
+    </dd>
+</div>

@@ -109,7 +109,8 @@ class Asignacion(models.Model):
         ('CANCELADO', 'Cancelado'),
     ]
 
-    solicitud = models.ForeignKey(Solicitud, on_delete=models.CASCADE, related_name='asignaciones')
+    solicitud = models.ForeignKey(Solicitud, on_delete=models.CASCADE, related_name='asignaciones', null=True, blank=True)
+    solicitud_especial = models.ForeignKey('SolicitudEspecial', on_delete=models.CASCADE, related_name='asignaciones', null=True, blank=True)
     responsable = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -121,7 +122,64 @@ class Asignacion(models.Model):
     completado_en = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Asignación #{self.id} - Solicitud #{self.solicitud.id} - {self.responsable.username}"
+        if self.solicitud:
+            return f"Asignación #{self.id} - Solicitud #{self.solicitud.id} - {self.responsable.username}"
+        return f"Asignación #{self.id} - Solicitud Especial #{self.solicitud_especial.id} - {self.responsable.username}"
 
     class Meta:
         ordering = ['-asignado_en']
+
+
+class SolicitudEspecial(models.Model):
+    ESTADOS = [
+        ('PENDIENTE', 'Pendiente'),
+        ('APROBADA', 'Aprobada'),
+        ('RECHAZADA', 'Rechazada'),
+    ]
+
+    DIAS_SEMANA = [
+        (0, 'Lunes'),
+        (1, 'Martes'),
+        (2, 'Miércoles'),
+        (3, 'Jueves'),
+        (4, 'Viernes'),
+        (5, 'Sábado'),
+        (6, 'Domingo'),
+    ]
+
+    docente = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='solicitudes_especiales'
+    )
+    carrera = models.ForeignKey(Carrera, on_delete=models.PROTECT)
+    materia = models.ForeignKey(Materia, on_delete=models.PROTECT)
+    curso = models.ForeignKey(Curso, on_delete=models.PROTECT)
+    bloque = models.CharField(max_length=50)
+    numero_aula = models.CharField(max_length=20)
+    cantidad_equipos = models.PositiveIntegerField()
+    telefono_docente = models.CharField(max_length=20, default='', help_text="Teléfono de contacto del docente")
+    dia_semana = models.IntegerField(choices=DIAS_SEMANA, default=0)
+    fecha_inicio = models.DateField(help_text="Fecha de inicio de la recurrencia", null=True, blank=True)
+    hora_inicio = models.TimeField()
+    hora_fin = models.TimeField()
+    descripcion = models.TextField(blank=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
+    observaciones = models.TextField(blank=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    @property
+    def dia_semana_nombre(self):
+        return dict(self.DIAS_SEMANA).get(self.dia_semana, '')
+
+    def save(self, *args, **kwargs):
+        if self.fecha_inicio:
+            self.dia_semana = self.fecha_inicio.weekday()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Solicitud Especial #{self.id} - {self.docente.username} - {self.dia_semana_nombre}"
+
+    class Meta:
+        ordering = ['-creado_en']

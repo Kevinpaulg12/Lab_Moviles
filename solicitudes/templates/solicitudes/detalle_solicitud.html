@@ -87,11 +87,11 @@
                     <h3 class="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)]">Datos Académicos</h3>
                 </div>
                 <dl class="space-y-4">
-                    {% include 'solicitudes/partials/_detail_field.html' with label="Docente" value=solicitud.docente.username icon="fa-user" %}
-                    {% include 'solicitudes/partials/_detail_field.html' with label="Carrera" value=solicitud.carrera.nombre icon="fa-building-columns" %}
-                    {% include 'solicitudes/partials/_detail_field.html' with label="Materia" value=solicitud.materia.nombre icon="fa-book" %}
-                    {% include 'solicitudes/partials/_detail_field.html' with label="Curso" value=solicitud.curso.nombre icon="fa-users" %}
-                    {% include 'solicitudes/partials/_detail_field.html' with label="Teléfono" value=solicitud.telefono_docente|default:"No registrado" icon="fa-phone" %}
+                    {% include 'solicitudes/_detail_field.html' with label="Docente" value=solicitud.docente.username icon="fa-user" %}
+                    {% include 'solicitudes/_detail_field.html' with label="Carrera" value=solicitud.carrera.nombre icon="fa-building-columns" %}
+                    {% include 'solicitudes/_detail_field.html' with label="Materia" value=solicitud.materia.nombre icon="fa-book" %}
+                    {% include 'solicitudes/_detail_field.html' with label="Curso" value=solicitud.curso.nombre icon="fa-users" %}
+                    {% include 'solicitudes/_detail_field.html' with label="Teléfono" value=solicitud.telefono_docente|default:"No registrado" icon="fa-phone" %}
                 </dl>
             </div>
 

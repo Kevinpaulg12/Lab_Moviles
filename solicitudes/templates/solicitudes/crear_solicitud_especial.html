@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+
+{% block title %}Nueva Solicitud Especial — SISOL{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-3xl mx-auto animate-fade-in-up">
+
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
+            <a href="{% url 'solicitudes:home' %}" class="hover:text-[var(--accent)] transition-colors">Inicio</a>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+            <a href="{% url 'solicitudes:mis_solicitudes_especiales' %}" class="hover:text-[var(--accent)] transition-colors">Mis Solicitudes Especiales</a>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+            <span class="text-[var(--text-primary)] font-medium">Nueva Solicitud Especial</span>
+        </div>
+
+        <!-- Banner informativo -->
+        <div class="bg-purple-50 border border-purple-200 rounded-2xl p-5 mb-6 flex gap-4 items-start">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-star text-purple-600 text-sm"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-black text-purple-800 mb-1">¿Qué es una Solicitud Especial?</h3>
+                <p class="text-sm text-purple-700 leading-relaxed">
+                    La <strong>Solicitud Especial</strong> te permite reservar equipos de cómputo de forma <strong>recurrente cada semana</strong>.
+                    En lugar de elegir una fecha específica, seleccionas un <strong>día de la semana</strong> (por ejemplo, todos los lunes)
+                    y un rango de horas fijo. A partir de la aprobación, los equipos estarán disponibles para ti
+                    <strong>todos los {{ form.dia_semana.value|default:"días elegidos" }}</strong> en ese horario, sin necesidad de hacer una nueva solicitud cada vez.
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-[var(--border)]">
+
+            <!-- Header -->
+            <div class="p-8 relative overflow-hidden" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full"></div>
+                <div class="absolute -bottom-6 -left-6 w-24 h-24 bg-white/5 rounded-full"></div>
+
+                <div class="relative flex items-start gap-4">
+                    <div class="bg-white/20 backdrop-blur p-3 rounded-2xl shadow-lg border border-white/30">
+                        <i class="fa-solid fa-star text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white tracking-tight">Nueva Solicitud Especial</h2>
+                        <p class="text-purple-200/80 text-sm mt-0.5">Reserva equipos de forma recurrente cada semana</p>
+                    </div>
+                </div>
+
+                <!-- Indicador de pasos -->
+                <div class="relative mt-6 flex items-center gap-2">
+                    <div class="flex items-center gap-2 bg-white/20 border border-white/30 px-3 py-1.5 rounded-full text-white text-xs font-semibold">
+                        <span class="w-5 h-5 rounded-full bg-white text-purple-600 flex items-center justify-center text-xs font-black">1</span>
+                        Académico
+                    </div>
+                    <div class="w-8 h-px bg-white/30"></div>
+                    <div class="flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-1.5 rounded-full text-white/60 text-xs font-semibold">
+                        <span class="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-black">2</span>
+                        Ubicación
+                    </div>
+                    <div class="w-8 h-px bg-white/30"></div>
+                    <div class="flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-1.5 rounded-full text-white/60 text-xs font-semibold">
+                        <span class="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-black">3</span>
+                        Día y Hora
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <form method="post" class="space-y-8" id="solicitud-especial-form">
+                    {% csrf_token %}
+
+                    <!-- Sección 1: Datos Académicos -->
+                    <div class="stagger-1 animate-fade-in-up" style="opacity:0">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+                                <i class="fa-solid fa-graduation-cap text-purple-600 text-sm"></i>
+                            </div>
+                            <h3 class="text-sm font-black uppercase tracking-widest text-[var(--text-secondary)]">Datos Académicos</h3>
+                            <div class="flex-1 h-px bg-[var(--border)]"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-5">
+                            <!-- Carrera -->
+                            <div class="field-group">
+                                <label for="id_carrera" class="field-label">
+                                    Carrera <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="carrera" id="id_carrera" required class="field-input">
+                                        <option value="">Seleccionar carrera…</option>
+                                        {% for dc in carreras_docente %}
+                                        <option value="{{ dc.carrera.id }}">{{ dc.carrera.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-icon"></i>
+                                </div>
+                            </div>
+
+                            <!-- Materia -->
+                            <div class="field-group">
+                                <label for="id_materia" class="field-label">
+                                    Materia <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="materia" id="id_materia" required disabled class="field-input disabled-field">
+                                        <option value="">Seleccionar primero una carrera</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-icon"></i>
+                                </div>
+                            </div>
+
+                            <!-- Curso -->
+                            <div class="field-group">
+                                <label for="id_curso" class="field-label">
+                                    Curso / Grupo <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="curso" id="id_curso" required disabled class="field-input disabled-field">
+                                        <option value="">Seleccionar primero una materia</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 2: Ubicación y Equipos -->
+                    <div class="stagger-2 animate-fade-in-up" style="opacity:0">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+                                <i class="fa-solid fa-location-dot text-purple-600 text-sm"></i>
+                            </div>
+                            <h3 class="text-sm font-black uppercase tracking-widest text-[var(--text-secondary)]">Ubicación y Equipos</h3>
+                            <div class="flex-1 h-px bg-[var(--border)]"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="field-group">
+                                <label for="id_bloque" class="field-label">
+                                    Bloque <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-building input-icon"></i>
+                                    <input type="text" name="bloque" id="id_bloque" required
+                                        class="field-input has-icon" placeholder="Ej: Bloque A">
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="id_numero_aula" class="field-label">
+                                    Número de Aula <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-door-open input-icon"></i>
+                                    <input type="text" name="numero_aula" id="id_numero_aula" required
+                                        class="field-input has-icon" placeholder="Ej: 101, LAB-1">
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="id_cantidad_equipos" class="field-label">
+                                    Cantidad de Equipos <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-laptop input-icon"></i>
+                                    <input type="number" name="cantidad_equipos" id="id_cantidad_equipos" required min="1"
+                                        class="field-input has-icon" placeholder="¿Cuántos equipos necesitas?">
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="id_telefono_docente" class="field-label">
+                                    Teléfono de Contacto <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-phone input-icon"></i>
+                                    <input type="text" name="telefono_docente" id="id_telefono_docente" required
+                                        class="field-input has-icon" placeholder="Ej: 0991234567">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 3: Horario Recurrente -->
+                    <div class="stagger-3 animate-fade-in-up" style="opacity:0">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+                                <i class="fa-solid fa-clock text-purple-600 text-sm"></i>
+                            </div>
+                            <h3 class="text-sm font-black uppercase tracking-widest text-[var(--text-secondary)]">Horario Recurrente</h3>
+                            <div class="flex-1 h-px bg-[var(--border)]"></div>
+                        </div>
+
+                        <!-- Aviso recurrencia -->
+                        <div class="bg-purple-50 border border-purple-100 rounded-xl p-3 mb-5 flex items-center gap-3">
+                            <i class="fa-solid fa-repeat text-purple-500 text-sm"></i>
+                            <p class="text-xs text-purple-700 font-medium">
+                                Elige una fecha de inicio. Los equipos serán enviados <strong>cada semana ese mismo día</strong> en el horario que indiques.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div class="field-group">
+                                <label for="id_fecha_inicio" class="field-label">
+                                    Fecha de Inicio <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-calendar-days input-icon"></i>
+                                    <input type="date" name="fecha_inicio" id="id_fecha_inicio" required
+                                        class="field-input has-icon">
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="id_hora_inicio" class="field-label">
+                                    Hora de Inicio <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-circle-play input-icon"></i>
+                                    <input type="time" name="hora_inicio" id="id_hora_inicio" required
+                                        class="field-input has-icon">
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="id_hora_fin" class="field-label">
+                                    Hora de Fin <span class="text-[var(--danger)]">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-circle-stop input-icon"></i>
+                                    <input type="time" name="hora_fin" id="id_hora_fin" required
+                                        class="field-input has-icon">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="stagger-4 animate-fade-in-up" style="opacity:0">
+                        <div class="field-group">
+                            <label for="id_descripcion" class="field-label flex items-center gap-2">
+                                Descripción Adicional
+                                <span class="text-xs font-normal text-[var(--text-secondary)] normal-case tracking-normal">(opcional)</span>
+                            </label>
+                            <textarea name="descripcion" id="id_descripcion" rows="3"
+                                class="field-input resize-none"
+                                placeholder="Describe brevemente la práctica o requerimientos especiales…"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="flex gap-3 pt-2 stagger-4 animate-fade-in-up" style="opacity:0">
+                        <a href="{% url 'solicitudes:mis_solicitudes_especiales' %}"
+                            class="flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl border border-[var(--border)] bg-white hover:bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-semibold transition-all duration-200 text-sm">
+                            <i class="fa-solid fa-xmark"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit"
+                            class="flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5"
+                            style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            Enviar Solicitud Especial
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .field-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    .field-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        background: white;
+        transition: all 0.2s ease;
+        outline: none;
+        font-family: 'DM Sans', sans-serif;
+    }
+    .field-input:focus { border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,0.12); }
+    .field-input.has-icon { padding-left: 2.75rem; }
+    .field-input.disabled-field { background: var(--surface-raised); color: var(--text-secondary); cursor: not-allowed; }
+    .input-wrapper, .select-wrapper { position: relative; }
+    .input-icon, .select-icon { position: absolute; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--text-secondary); pointer-events: none; }
+    .input-icon { left: 1rem; }
+    .select-icon { right: 1rem; }
+    .select-wrapper select { appearance: none; padding-right: 2.5rem; cursor: pointer; }
+    .select-wrapper select.disabled-field { cursor: not-allowed; }
+</style>
+
+<script>
+    const idCarrera = document.getElementById('id_carrera');
+    const idMateria = document.getElementById('id_materia');
+    const idCurso   = document.getElementById('id_curso');
+
+    function enableSelect(el) { el.disabled = false; el.classList.remove('disabled-field'); }
+    function disableSelect(el, placeholder) {
+        el.innerHTML = `<option value="">${placeholder}</option>`;
+        el.disabled = true;
+        el.classList.add('disabled-field');
+    }
+
+    idCarrera.addEventListener('change', function () {
+        const carreraId = this.value;
+        disableSelect(idMateria, 'Seleccionar primero una carrera');
+        disableSelect(idCurso, 'Seleccionar primero una materia');
+        if (!carreraId) return;
+
+        fetch(`/solicitudes/ajax/materias-por-carrera/${carreraId}/`)
+            .then(r => r.json())
+            .then(data => {
+                idMateria.innerHTML = '<option value="">Seleccionar materia…</option>';
+                data.materias.forEach(m => {
+                    const o = document.createElement('option');
+                    o.value = m.id; o.textContent = m.nombre;
+                    idMateria.appendChild(o);
+                });
+                enableSelect(idMateria);
+            });
+    });
+
+    idMateria.addEventListener('change', function () {
+        const materiaId = this.value;
+        disableSelect(idCurso, 'Seleccionar primero una materia');
+        if (!materiaId) return;
+
+        fetch(`/solicitudes/ajax/cursos-por-materia/${materiaId}/`)
+            .then(r => r.json())
+            .then(data => {
+                idCurso.innerHTML = '<option value="">Seleccionar curso…</option>';
+                data.cursos.forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c.id; o.textContent = c.nombre;
+                    idCurso.appendChild(o);
+                });
+                enableSelect(idCurso);
+            });
+    });
+</script>
+{% endblock %}

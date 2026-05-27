@@ -12,10 +12,9 @@
                 <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Administración</p>
                 <h2 class="text-3xl font-black text-[var(--text-primary)] tracking-tight">Gestión de Solicitudes</h2>
             </div>
-            <!-- Contador total -->
             <div class="hidden md:flex items-center gap-2 bg-white border border-[var(--border)] rounded-2xl px-5 py-3 shadow-sm">
                 <i class="fa-solid fa-layer-group text-[var(--accent)] text-sm"></i>
-                <span class="text-sm font-bold text-[var(--text-primary)]">{{ solicitudes|length }}</span>
+                <span class="text-sm font-bold text-[var(--text-primary)]">{{ solicitudes|length|add:solicitudes_especiales|length }}</span>
                 <span class="text-sm text-[var(--text-secondary)]">resultado{% if solicitudes|length != 1 %}s{% endif %}</span>
             </div>
         </div>
@@ -48,9 +47,16 @@
             </a>
         </div>
 
-        <!-- Tabla -->
+        <!-- Tabla Solicitudes Normales -->
         <div class="bg-white rounded-3xl shadow-xl border border-[var(--border)] overflow-hidden animate-fade-in-up stagger-2" style="opacity:0">
             {% if solicitudes %}
+            <div class="px-6 py-4 border-b border-[var(--border)] flex items-center gap-3 bg-[var(--surface-raised)]">
+                <div class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <i class="fa-solid fa-file-alt text-blue-600 text-sm"></i>
+                </div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-[var(--text-secondary)]">Solicitudes Normales</h3>
+                <span class="ml-auto text-xs font-bold text-[var(--text-secondary)]">{{ solicitudes|length }} resultado{% if solicitudes|length != 1 %}s{% endif %}</span>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
@@ -107,15 +113,95 @@
                 </table>
             </div>
             {% else %}
-            <div class="flex flex-col items-center justify-center py-20 text-center px-6">
+            <div class="flex flex-col items-center justify-center py-16 text-center px-6">
                 <div class="w-16 h-16 rounded-2xl bg-[var(--surface-raised)] border border-[var(--border)] flex items-center justify-center mb-4">
                     <i class="fa-solid fa-clipboard-list text-[var(--text-secondary)] text-2xl"></i>
                 </div>
-                <p class="font-bold text-[var(--text-primary)] mb-1">Sin resultados</p>
-                <p class="text-sm text-[var(--text-secondary)]">No hay solicitudes que coincidan con el filtro seleccionado.</p>
-                <a href="{% url 'solicitudes:lista_solicitudes' %}" class="mt-4 text-xs font-bold text-[var(--accent)] hover:underline">
-                    Ver todas las solicitudes
-                </a>
+                <p class="font-bold text-[var(--text-primary)] mb-1">Sin solicitudes normales</p>
+                <p class="text-sm text-[var(--text-secondary)]">No hay solicitudes normales con el filtro seleccionado.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Tabla Solicitudes Especiales -->
+        <div class="bg-white rounded-3xl shadow-xl border border-purple-100 overflow-hidden mt-8 animate-fade-in-up stagger-3" style="opacity:0">
+            {% if solicitudes_especiales %}
+            <div class="px-6 py-4 border-b border-purple-100 flex items-center gap-3" style="background: linear-gradient(135deg, #f5f3ff, #faf5ff);">
+                <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <i class="fa-solid fa-star text-purple-600 text-sm"></i>
+                </div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-purple-700">Solicitudes Especiales</h3>
+                <span class="ml-auto text-xs font-bold text-purple-500">{{ solicitudes_especiales|length }} resultado{% if solicitudes_especiales|length != 1 %}s{% endif %}</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-purple-50 border-b border-purple-100">
+                            <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-purple-400">#</th>
+                            <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-purple-400">Docente</th>
+                            <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-purple-400 hidden md:table-cell">Carrera</th>
+                            <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-purple-400">Materia</th>
+                            <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-purple-400 hidden lg:table-cell">Día Recurrente</th>
+                            <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-purple-400 hidden lg:table-cell">Horario</th>
+                            <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-widest text-purple-400">Estado</th>
+                            <th class="px-6 py-4"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-purple-50">
+                        {% for s in solicitudes_especiales %}
+                        <tr class="hover:bg-purple-50/50 transition-colors duration-150 group">
+                            <td class="px-6 py-4 text-sm font-bold text-purple-300">#{{ s.id }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-xs font-black shadow-sm flex-shrink-0">
+                                        {{ s.docente.username|first|upper }}
+                                    </div>
+                                    <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.docente.username|title }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-[var(--text-secondary)] hidden md:table-cell">{{ s.carrera.nombre }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{{ s.materia.nombre }}</td>
+                            <td class="px-6 py-4 hidden lg:table-cell">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                                    <i class="fa-solid fa-repeat text-xs"></i>
+                                    {{ s.dia_semana_nombre }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-[var(--text-secondary)] hidden lg:table-cell">
+                                <i class="fa-solid fa-clock text-xs mr-1 text-purple-400"></i>
+                                {{ s.hora_inicio }} – {{ s.hora_fin }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border
+                                    {% if s.estado == 'PENDIENTE' %}bg-yellow-50 text-yellow-700 border-yellow-200
+                                    {% elif s.estado == 'APROBADA' %}bg-green-50 text-green-700 border-green-200
+                                    {% else %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                                    <span class="w-1.5 h-1.5 rounded-full
+                                        {% if s.estado == 'PENDIENTE' %}bg-yellow-500
+                                        {% elif s.estado == 'APROBADA' %}bg-green-500
+                                        {% else %}bg-red-500{% endif %}"></span>
+                                    {{ s.get_estado_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'solicitudes:detalle_solicitud_especial' s.id %}"
+                                    class="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1.5 text-xs font-bold text-purple-500 hover:underline transition-opacity duration-200">
+                                    Ver detalle
+                                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center justify-center py-16 text-center px-6">
+                <div class="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-star text-purple-300 text-2xl"></i>
+                </div>
+                <p class="font-bold text-[var(--text-primary)] mb-1">Sin solicitudes especiales</p>
+                <p class="text-sm text-[var(--text-secondary)]">No hay solicitudes especiales con el filtro seleccionado.</p>
             </div>
             {% endif %}
         </div>

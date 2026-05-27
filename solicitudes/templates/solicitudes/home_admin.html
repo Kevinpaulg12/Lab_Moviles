@@ -30,7 +30,7 @@
                     </div>
                     <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Pendientes</p>
                     <p class="text-5xl font-black text-[var(--text-primary)] leading-none">{{ pendientes }}</p>
-                    <p class="text-xs text-yellow-600 font-semibold mt-2">Requieren revisión</p>
+                    <p class="text-xs text-yellow-600 font-semibold mt-2">Normales + Especiales</p>
                 </div>
             </a>
 
@@ -47,7 +47,7 @@
                     </div>
                     <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Aprobadas</p>
                     <p class="text-5xl font-black text-[var(--text-primary)] leading-none">{{ aprobadas }}</p>
-                    <p class="text-xs text-green-600 font-semibold mt-2">Procesadas con éxito</p>
+                    <p class="text-xs text-green-600 font-semibold mt-2">Normales + Especiales</p>
                 </div>
             </a>
 
@@ -64,7 +64,7 @@
                     </div>
                     <p class="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">Rechazadas</p>
                     <p class="text-5xl font-black text-[var(--text-primary)] leading-none">{{ rechazadas }}</p>
-                    <p class="text-xs text-red-600 font-semibold mt-2">No procesadas</p>
+                    <p class="text-xs text-red-600 font-semibold mt-2">Normales + Especiales</p>
                 </div>
             </a>
 
@@ -130,7 +130,7 @@
                     </div>
                     <div class="flex-1">
                         <p class="font-bold text-[var(--text-primary)] group-hover:text-blue-600 transition-colors text-sm">Todas las Solicitudes</p>
-                        <p class="text-xs text-[var(--text-secondary)]">Lista completa del sistema</p>
+                        <p class="text-xs text-[var(--text-secondary)]">Normales y especiales</p>
                     </div>
                     <i class="fa-solid fa-arrow-right text-xs text-[var(--text-secondary)] group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all duration-200"></i>
                 </a>
@@ -142,7 +142,7 @@
                     </div>
                     <div class="flex-1">
                         <p class="font-bold text-[var(--text-primary)] group-hover:text-yellow-600 transition-colors text-sm">Solicitudes Pendientes</p>
-                        <p class="text-xs text-[var(--text-secondary)]">Revisar y gestionar nuevas</p>
+                        <p class="text-xs text-[var(--text-secondary)]">Normales y especiales sin revisar</p>
                     </div>
                     {% if pendientes %}
                     <span class="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-500 text-white text-xs font-black flex items-center justify-center">

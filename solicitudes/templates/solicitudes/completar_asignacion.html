@@ -24,7 +24,10 @@
         <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-[var(--border)]">
 
             <!-- Header -->
-            <div class="gradient-bg p-8 relative overflow-hidden">
+            <div class="p-8 relative overflow-hidden
+                {% if asignacion.solicitud_especial %}" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">
+                {% else %}" class="gradient-bg p-8 relative overflow-hidden">
+                {% endif %}
                 <div class="absolute -top-8 -right-8 w-32 h-32 bg-white/5 rounded-full"></div>
                 <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-white/5 rounded-full"></div>
 
@@ -38,9 +41,15 @@
                             <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">
                                 Asignación #{{ asignacion.id }}
                             </span>
+                            {% if asignacion.solicitud_especial %}
+                            <span class="bg-white/10 text-purple-200 text-xs px-3 py-1 rounded-full border border-white/20">
+                                Solicitud Especial #{{ asignacion.solicitud_especial.id }}
+                            </span>
+                            {% else %}
                             <span class="bg-white/10 text-blue-200 text-xs px-3 py-1 rounded-full border border-white/20">
                                 Solicitud #{{ asignacion.solicitud.id }}
                             </span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -55,51 +64,110 @@
                         Detalles de la Solicitud
                     </h3>
 
+                    {% if asignacion.solicitud_especial %}
+                    {% with s=asignacion.solicitud_especial %}
+
                     <!-- Materia destacada -->
                     <p class="text-base font-bold text-[var(--text-primary)] mb-4 pb-4 border-b border-[var(--border)]">
-                        <i class="fa-solid fa-book-open text-[var(--accent)] mr-2"></i>
-                        {{ asignacion.solicitud.materia.nombre }}
+                        <i class="fa-solid fa-book-open text-purple-500 mr-2"></i>
+                        {{ s.materia.nombre }}
                     </p>
 
                     <div class="grid grid-cols-2 gap-x-6 gap-y-3">
                         <div class="flex flex-col gap-0.5">
                             <span class="text-xs text-[var(--text-secondary)] font-medium">Carrera</span>
-                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ asignacion.solicitud.carrera.nombre }}</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.carrera.nombre }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5">
                             <span class="text-xs text-[var(--text-secondary)] font-medium">Docente</span>
-                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ asignacion.solicitud.docente.username|title }}</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.docente.username|title }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5">
                             <span class="text-xs text-[var(--text-secondary)] font-medium">Teléfono</span>
-                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ asignacion.solicitud.telefono_docente }}</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.telefono_docente }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-xs text-[var(--text-secondary)] font-medium">Fecha</span>
-                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ asignacion.solicitud.fecha }}</span>
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Día</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">
+                                <i class="fa-solid fa-repeat text-purple-500 text-xs mr-1"></i>
+                                Cada {{ s.dia_semana_nombre }}
+                            </span>
                         </div>
                         <div class="flex flex-col gap-0.5">
                             <span class="text-xs text-[var(--text-secondary)] font-medium">Horario</span>
-                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ asignacion.solicitud.hora_inicio }} – {{ asignacion.solicitud.hora_fin }}</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.hora_inicio }} – {{ s.hora_fin }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5">
                             <span class="text-xs text-[var(--text-secondary)] font-medium">Equipos</span>
-                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ asignacion.solicitud.cantidad_equipos }}</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.cantidad_equipos }}</span>
+                        </div>
+                        <div class="flex flex-col gap-0.5 col-span-2">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Ubicación</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">
+                                <i class="fa-solid fa-location-dot text-purple-500 text-xs mr-1"></i>
+                                {{ s.bloque }} — Aula {{ s.numero_aula }}
+                            </span>
+                        </div>
+                        {% if s.descripcion %}
+                        <div class="flex flex-col gap-0.5 col-span-2">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Descripción</span>
+                            <span class="text-sm text-[var(--text-primary)]">{{ s.descripcion }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+
+                    {% else %}
+                    {% with s=asignacion.solicitud %}
+
+                    <!-- Materia destacada -->
+                    <p class="text-base font-bold text-[var(--text-primary)] mb-4 pb-4 border-b border-[var(--border)]">
+                        <i class="fa-solid fa-book-open text-[var(--accent)] mr-2"></i>
+                        {{ s.materia.nombre }}
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-3">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Carrera</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.carrera.nombre }}</span>
+                        </div>
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Docente</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.docente.username|title }}</span>
+                        </div>
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Teléfono</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.telefono_docente }}</span>
+                        </div>
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Fecha</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.fecha }}</span>
+                        </div>
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Horario</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.hora_inicio }} – {{ s.hora_fin }}</span>
+                        </div>
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-xs text-[var(--text-secondary)] font-medium">Equipos</span>
+                            <span class="text-sm font-semibold text-[var(--text-primary)]">{{ s.cantidad_equipos }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5 col-span-2">
                             <span class="text-xs text-[var(--text-secondary)] font-medium">Ubicación</span>
                             <span class="text-sm font-semibold text-[var(--text-primary)]">
                                 <i class="fa-solid fa-location-dot text-[var(--accent)] text-xs mr-1"></i>
-                                {{ asignacion.solicitud.bloque }} — Aula {{ asignacion.solicitud.numero_aula }}
+                                {{ s.bloque }} — Aula {{ s.numero_aula }}
                             </span>
                         </div>
-                        {% if asignacion.solicitud.descripcion %}
+                        {% if s.descripcion %}
                         <div class="flex flex-col gap-0.5 col-span-2">
                             <span class="text-xs text-[var(--text-secondary)] font-medium">Descripción</span>
-                            <span class="text-sm text-[var(--text-primary)]">{{ asignacion.solicitud.descripcion }}</span>
+                            <span class="text-sm text-[var(--text-primary)]">{{ s.descripcion }}</span>
                         </div>
                         {% endif %}
                     </div>
+                    {% endwith %}
+                    {% endif %}
+
                 </div>
 
                 <!-- Formulario -->
